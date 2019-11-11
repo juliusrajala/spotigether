@@ -2,6 +2,7 @@
   --spoti-color: #1db954;
   --app-color: #f2f2f2;
   --color-black: #000000;
+  --app-font: Asap, Helvetica, sans-serif;
 }
 
 *,
@@ -24,6 +25,55 @@ h1 {
   font-family: Asap, Helvetica, sans-serif;
   font-weight: 600;
   font-size: 4rem;
+}
+
+.SpotiGether-App {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.AppContainer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: center;
+}
+
+.SearchBar {
+  color: #555555;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 1rem;
+  align-self: flex-end;
+  cursor: pointer;
+}
+
+.SearchBar > input {
+  margin-right: 1rem;
+  font-family: var(--app-font);
+  color: #555555;
+  background: transparent;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: none;
+  border-bottom: 1px solid #555555;
+}
+
+.SearchBar > input:focus {
+  color: var(--spoti-color);
+  border-color: var(--spoti-color);
+}
+
+.SearchBar > input:focus + * {
+  color: var(--spoti-color);
+}
+
+.SearchBar:hover > * {
+  color: var(--spoti-color);
+  border-color: var(--spoti-color);
 }
 
 .Title--Spotify {

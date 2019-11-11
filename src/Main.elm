@@ -1,8 +1,9 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, button, code, div, h1, span, text)
-import Html.Attributes exposing (class)
+import FeatherIcons
+import Html exposing (Html, button, code, div, h1, input, span, text)
+import Html.Attributes exposing (class, placeholder)
 import Html.Events exposing (onClick)
 
 
@@ -54,15 +55,30 @@ view model =
                 Just value ->
                     value
     in
-    div []
-        [ h1 []
-            [ span [ class "Title--Spotify" ] [ text "Spoti" ]
-            , span [ class "Title--App" ] [ text "Gether" ]
+    div [ class "SpotiGether-App" ]
+        [ div [ class "SearchBar" ]
+            [ input [ class "SearchBar-Text", placeholder "Search tracks" ] []
+            , FeatherIcons.search |> FeatherIcons.toHtml []
             ]
-        , div [ class "Track-Container" ]
-            [ span [ class "Track-Label" ] [ text track.track ]
-            , span [ class "Track-Artist" ] [ text track.artist ]
-            , span [ class "Track-ID" ] [ text track.id ]
+        , div [ class "AppContainer" ]
+            [ h1
+                []
+                [ span [ class "Title--Spotify" ] [ text "Spoti" ]
+                , span [ class "Title--App" ] [ text "Gether" ]
+                ]
+            , div [ class "Track-Container" ]
+                [ span [ class "Track-Label" ] [ text track.track ]
+                , span [ class "Track-Artist" ] [ text track.artist ]
+                , span [ class "Track-ID" ] [ text track.id ]
+                ]
+            , button [ onClick (SetPlaying { artist = "Elton John", track = "Rocket Man", id = "UUID_UUID_UUID" }) ] [ text "+" ]
+            , case model.searchOpen of
+                True ->
+                    div [ class "Search-Container" ]
+                        [ input [] []
+                        ]
+
+                False ->
+                    span [] []
             ]
-        , button [ onClick (SetPlaying { artist = "Elton John", track = "Rocket Man", id = "UUID_UUID_UUID" }) ] [ text "+" ]
         ]

@@ -4893,8 +4893,9 @@ function _Browser_load(url)
 		}
 	}));
 }
+var $elm$core$Basics$False = {$: 'False'};
 var $elm$core$Maybe$Nothing = {$: 'Nothing'};
-var $author$project$Main$init = {input: '', playing: $elm$core$Maybe$Nothing};
+var $author$project$Main$init = {input: '', playing: $elm$core$Maybe$Nothing, searchOpen: false};
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -4996,7 +4997,6 @@ var $elm$core$Result$Ok = function (a) {
 var $elm$json$Json$Decode$OneOf = function (a) {
 	return {$: 'OneOf', a: a};
 };
-var $elm$core$Basics$False = {$: 'False'};
 var $elm$core$Basics$add = _Basics_add;
 var $elm$core$Maybe$Just = function (a) {
 	return {$: 'Just', a: a};
@@ -10524,97 +10524,283 @@ var $author$project$Main$SetPlaying = function (a) {
 	return {$: 'SetPlaying', a: a};
 };
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
+var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
+var $1602$elm_feather$FeatherIcons$Icon = function (a) {
+	return {$: 'Icon', a: a};
+};
+var $1602$elm_feather$FeatherIcons$defaultAttributes = function (name) {
+	return {
+		_class: $elm$core$Maybe$Just('feather feather-' + name),
+		size: 24,
+		sizeUnit: '',
+		strokeWidth: 2,
+		viewBox: '0 0 24 24'
+	};
+};
+var $1602$elm_feather$FeatherIcons$makeBuilder = F2(
+	function (name, src) {
+		return $1602$elm_feather$FeatherIcons$Icon(
+			{
+				attrs: $1602$elm_feather$FeatherIcons$defaultAttributes(name),
+				src: src
+			});
+	});
+var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var $elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
+var $elm$svg$Svg$Attributes$strokeLinejoin = _VirtualDom_attribute('stroke-linejoin');
+var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
+var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
+var $elm$virtual_dom$VirtualDom$property = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_property,
+			_VirtualDom_noInnerHtmlOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $1602$elm_feather$FeatherIcons$xmlns = function (s) {
+	return A2(
+		$elm$virtual_dom$VirtualDom$property,
+		'xmlns',
+		$elm$json$Json$Encode$string(s));
+};
+var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
+var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
+var $1602$elm_feather$FeatherIcons$search = A2(
+	$1602$elm_feather$FeatherIcons$makeBuilder,
+	'search',
+	_List_fromArray(
+		[
+			A2(
+			$elm$svg$Svg$svg,
+			_List_fromArray(
+				[
+					$1602$elm_feather$FeatherIcons$xmlns('http://www.w3.org/2000/svg'),
+					$elm$svg$Svg$Attributes$width('24'),
+					$elm$svg$Svg$Attributes$height('24'),
+					$elm$svg$Svg$Attributes$viewBox('0 0 24 24'),
+					$elm$svg$Svg$Attributes$fill('none'),
+					$elm$svg$Svg$Attributes$stroke('currentColor'),
+					$elm$svg$Svg$Attributes$strokeWidth('2'),
+					$elm$svg$Svg$Attributes$strokeLinecap('round'),
+					$elm$svg$Svg$Attributes$strokeLinejoin('round'),
+					$elm$svg$Svg$Attributes$class('feather feather-search')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx('11'),
+							$elm$svg$Svg$Attributes$cy('11'),
+							$elm$svg$Svg$Attributes$r('8')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1('21'),
+							$elm$svg$Svg$Attributes$y1('21'),
+							$elm$svg$Svg$Attributes$x2('16.65'),
+							$elm$svg$Svg$Attributes$y2('16.65')
+						]),
+					_List_Nil)
+				]))
+		]));
+var $elm$svg$Svg$map = $elm$virtual_dom$VirtualDom$map;
+var $1602$elm_feather$FeatherIcons$toHtml = F2(
+	function (attributes, _v0) {
+		var src = _v0.a.src;
+		var attrs = _v0.a.attrs;
+		var strSize = $elm$core$String$fromFloat(attrs.size);
+		var baseAttributes = _List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$fill('none'),
+				$elm$svg$Svg$Attributes$height(
+				_Utils_ap(strSize, attrs.sizeUnit)),
+				$elm$svg$Svg$Attributes$width(
+				_Utils_ap(strSize, attrs.sizeUnit)),
+				$elm$svg$Svg$Attributes$stroke('currentColor'),
+				$elm$svg$Svg$Attributes$strokeLinecap('round'),
+				$elm$svg$Svg$Attributes$strokeLinejoin('round'),
+				$elm$svg$Svg$Attributes$strokeWidth(
+				$elm$core$String$fromFloat(attrs.strokeWidth)),
+				$elm$svg$Svg$Attributes$viewBox(attrs.viewBox)
+			]);
+		var combinedAttributes = _Utils_ap(
+			function () {
+				var _v1 = attrs._class;
+				if (_v1.$ === 'Just') {
+					var c = _v1.a;
+					return A2(
+						$elm$core$List$cons,
+						$elm$svg$Svg$Attributes$class(c),
+						baseAttributes);
+				} else {
+					return baseAttributes;
+				}
+			}(),
+			attributes);
+		return A2(
+			$elm$svg$Svg$svg,
+			combinedAttributes,
+			A2(
+				$elm$core$List$map,
+				$elm$svg$Svg$map($elm$core$Basics$never),
+				src));
+	});
 var $author$project$Main$view = function (model) {
 	var track = function () {
-		var _v0 = model.playing;
-		if (_v0.$ === 'Nothing') {
-			return {artist: 'Nothing', id: '- - -', track: 'Nothing'};
+		var _v1 = model.playing;
+		if (_v1.$ === 'Nothing') {
+			return {artist: 'No artist', id: '- - -', track: 'No song'};
 		} else {
-			var value = _v0.a;
+			var value = _v1.a;
 			return value;
 		}
 	}();
 	return A2(
 		$elm$html$Html$div,
-		_List_Nil,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('SpotiGether-App')
+			]),
 		_List_fromArray(
 			[
 				A2(
-				$elm$html$Html$h1,
-				_List_Nil,
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('SearchBar')
+					]),
 				_List_fromArray(
 					[
 						A2(
-						$elm$html$Html$span,
+						$elm$html$Html$input,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('Title--Spotify')
+								$elm$html$Html$Attributes$class('SearchBar-Text'),
+								$elm$html$Html$Attributes$placeholder('Search tracks')
 							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Spoti')
-							])),
-						A2(
-						$elm$html$Html$span,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('Title--App')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Gether')
-							]))
+						_List_Nil),
+						A2($1602$elm_feather$FeatherIcons$toHtml, _List_Nil, $1602$elm_feather$FeatherIcons$search)
 					])),
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('Track-Container')
+						$elm$html$Html$Attributes$class('AppContainer')
 					]),
 				_List_fromArray(
 					[
 						A2(
-						$elm$html$Html$span,
+						$elm$html$Html$h1,
+						_List_Nil,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('Track-Label')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(track.track)
+								A2(
+								$elm$html$Html$span,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('Title--Spotify')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Spoti')
+									])),
+								A2(
+								$elm$html$Html$span,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('Title--App')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Gether')
+									]))
 							])),
 						A2(
-						$elm$html$Html$span,
+						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('Track-Artist')
+								$elm$html$Html$Attributes$class('Track-Container')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text(track.artist)
+								A2(
+								$elm$html$Html$span,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('Track-Label')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(track.track)
+									])),
+								A2(
+								$elm$html$Html$span,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('Track-Artist')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(track.artist)
+									])),
+								A2(
+								$elm$html$Html$span,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('Track-ID')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(track.id)
+									]))
 							])),
 						A2(
-						$elm$html$Html$span,
+						$elm$html$Html$button,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('Track-ID')
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$SetPlaying(
+									{artist: 'Elton John', id: 'UUID_UUID_UUID', track: 'Rocket Man'}))
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text(track.id)
-							]))
-					])),
-				A2(
-				$elm$html$Html$button,
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onClick(
-						$author$project$Main$SetPlaying(
-							{artist: 'Elton John', id: 'UUID_UUID_UUID', track: 'Rocket Man'}))
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('+')
+								$elm$html$Html$text('+')
+							])),
+						function () {
+						var _v0 = model.searchOpen;
+						if (_v0) {
+							return A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('Search-Container')
+									]),
+								_List_fromArray(
+									[
+										A2($elm$html$Html$input, _List_Nil, _List_Nil)
+									]));
+						} else {
+							return A2($elm$html$Html$span, _List_Nil, _List_Nil);
+						}
+					}()
 					]))
 			]));
 };
