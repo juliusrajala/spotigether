@@ -16,6 +16,16 @@ subscriptions model =
     Sub.none
 
 
+nowPlayingUrl : String
+nowPlayingUrl =
+    "localhost:5000/v1/spotify/now_playing"
+
+
+searchSongsUrl : String
+searchSongsUrl =
+    "localhost:5000/v1/spotify/search"
+
+
 type alias SpotifySong =
     { artist : String
     , track : String
