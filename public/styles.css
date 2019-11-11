@@ -119,7 +119,7 @@ h1 {
 }
 
 .SearchContainer {
-  border: 1px solid #222;
+  border: 1px solid #555;
   color: var(--app-color);
   background: var(--color-black);
   width: 450px;
@@ -131,11 +131,22 @@ h1 {
   margin-right: auto;
   border-radius: 2px;
   padding: 1rem;
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: none;
 }
 
 .SearchResult {
   padding: 0.5rem;
   color: #555555;
+}
+
+.SearchResult > span {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 .SearchResult:not(:last-child) {
@@ -146,4 +157,5 @@ h1 {
   color: var(--app-color);
   font-weight: 600;
   padding-right: 1rem;
+  padding-bottom: 0.25rem;
 }
