@@ -9,13 +9,8 @@ import Http
 import Json.Decode as D
 
 
-main =
-    Browser.element { init = init, update = update, subscriptions = subscriptions, view = view }
 
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
+-- Models
 
 
 type alias SpotifySong =
@@ -33,15 +28,13 @@ type alias Model =
     }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { searchInput = ""
-      , playing = Nothing
-      , searchOpen = False
-      , searchResults = []
-      }
-    , getNowPlaying
-    )
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+
+
+-- Update
 
 
 type Msg
@@ -79,6 +72,10 @@ update msg model =
 
         NoOp ->
             ( model, Cmd.none )
+
+
+
+-- View
 
 
 view : Model -> Html Msg
@@ -163,3 +160,22 @@ songDecoder =
 searchDecoder : D.Decoder (List SpotifySong)
 searchDecoder =
     D.list songDecoder
+
+
+
+-- Init
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { searchInput = ""
+      , playing = Nothing
+      , searchOpen = False
+      , searchResults = []
+      }
+    , getNowPlaying
+    )
+
+
+main =
+    Browser.element { init = init, update = update, subscriptions = subscriptions, view = view }
