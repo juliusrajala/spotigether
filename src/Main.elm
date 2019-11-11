@@ -5,6 +5,8 @@ import FeatherIcons
 import Html exposing (Html, button, code, div, h1, input, span, text)
 import Html.Attributes exposing (class, placeholder)
 import Html.Events exposing (onClick, onInput)
+import Http
+import Json.Decode as D
 
 
 main =
@@ -16,27 +18,11 @@ subscriptions model =
     Sub.none
 
 
-nowPlayingUrl : String
-nowPlayingUrl =
-    "localhost:5000/v1/spotify/now_playing"
-
-
-searchSongsUrl : String
-searchSongsUrl =
-    "localhost:5000/v1/spotify/search"
-
-
 type alias SpotifySong =
     { artist : String
     , track : String
     , id : String
     }
-
-
-type HttpRequest
-    = Failure
-    | Loading
-    | Success (List SpotifySong)
 
 
 type alias Model =
@@ -52,12 +38,12 @@ init _ =
       , playing = Nothing
       , searchOpen = False
       }
-    , Cmd.none
+    , getNowPlaying
     )
 
 
 type Msg
-    = SetPlaying SpotifySong
+    = GotPlaying (Result Http.Error SpotifySong)
     | SetSearchActive
     | ChangeSearchInput String
     | NoOp
@@ -66,8 +52,13 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SetPlaying song ->
-            ( { model | playing = Just song }, Cmd.none )
+        GotPlaying result ->
+            case result of
+                Ok song ->
+                    ( { model | playing = Just song }, Cmd.none )
+
+                Err _ ->
+                    ( { model | playing = Nothing }, Cmd.none )
 
         SetSearchActive ->
             ( { model | searchOpen = True }, Cmd.none )
@@ -106,7 +97,6 @@ view model =
                 , span [ class "Track-Artist" ] [ text track.artist ]
                 , span [ class "Track-ID" ] [ text track.id ]
                 ]
-            , button [ onClick (SetPlaying { artist = "Elton John", track = "Rocket Man", id = "UUID_UUID_UUID" }) ] [ text "+" ]
             , case model.searchOpen of
                 True ->
                     div [ class "Search-Container" ]
@@ -117,3 +107,26 @@ view model =
                     span [] []
             ]
         ]
+
+
+
+-- HTTP-requests
+
+
+nowPlayingUrl : String
+nowPlayingUrl =
+    "http://localhost:5000/v1/spotify/now_playing"
+
+
+searchSongsUrl : String
+searchSongsUrl =
+    "localhost:5000/v1/spotify/search"
+
+
+getNowPlaying : Cmd Msg
+getNowPlaying =
+    Http.get
+        { url = nowPlayingUrl
+        , expect =
+            Http.expectJson GotPlaying (D.map3 SpotifySong (D.field "artist" D.string) (D.field "track" D.string) (D.field "id" D.string))
+        }
