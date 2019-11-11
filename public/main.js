@@ -10666,8 +10666,8 @@ var $elm$core$Basics$never = function (_v0) {
 	}
 };
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Main$GotSearch = function (a) {
-	return {$: 'GotSearch', a: a};
+var $author$project$Main$GotPlaying = function (a) {
+	return {$: 'GotPlaying', a: a};
 };
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
@@ -10917,6 +10917,7 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
+var $author$project$Main$nowPlayingUrl = 'http://localhost:5000/v1/spotify/now_playing';
 var $author$project$Main$SpotifySong = F3(
 	function (artist, track, id) {
 		return {artist: artist, id: id, track: track};
@@ -10927,23 +10928,191 @@ var $author$project$Main$songDecoder = A4(
 	A2($elm$json$Json$Decode$field, 'artist', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'track', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string));
-var $author$project$Main$searchDecoder = $elm$json$Json$Decode$list($author$project$Main$songDecoder);
-var $author$project$Main$searchSongsUrl = 'http://localhost:5000/v1/spotify/search';
-var $author$project$Main$getSearchResults = $elm$http$Http$get(
+var $author$project$Main$getNowPlaying = $elm$http$Http$get(
 	{
-		expect: A2($elm$http$Http$expectJson, $author$project$Main$GotSearch, $author$project$Main$searchDecoder),
-		url: $author$project$Main$searchSongsUrl
+		expect: A2($elm$http$Http$expectJson, $author$project$Main$GotPlaying, $author$project$Main$songDecoder),
+		url: $author$project$Main$nowPlayingUrl
 	});
+var $jinjor$elm_debounce$Debounce$Debounce = function (a) {
+	return {$: 'Debounce', a: a};
+};
+var $jinjor$elm_debounce$Debounce$init = $jinjor$elm_debounce$Debounce$Debounce(
+	{input: _List_Nil, locked: false});
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{playing: $elm$core$Maybe$Nothing, searchInput: '', searchOpen: false, searchResults: _List_Nil},
-		$author$project$Main$getSearchResults);
+		{playing: $elm$core$Maybe$Nothing, searchDebouncer: $jinjor$elm_debounce$Debounce$init, searchInput: '', searchOpen: false, searchResults: _List_Nil},
+		$author$project$Main$getNowPlaying);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
+var $author$project$Main$DebounceSearch = function (a) {
+	return {$: 'DebounceSearch', a: a};
+};
+var $jinjor$elm_debounce$Debounce$Later = function (a) {
+	return {$: 'Later', a: a};
+};
+var $jinjor$elm_debounce$Debounce$later = $jinjor$elm_debounce$Debounce$Later;
+var $author$project$Main$debounceConfig = function (debounceMsg) {
+	return {
+		strategy: $jinjor$elm_debounce$Debounce$later(1000),
+		transform: debounceMsg
+	};
+};
+var $author$project$Main$GotSearch = function (a) {
+	return {$: 'GotSearch', a: a};
+};
+var $author$project$Main$searchDecoder = $elm$json$Json$Decode$list($author$project$Main$songDecoder);
+var $author$project$Main$searchSongsUrl = 'http://localhost:5000/v1/spotify/search';
+var $author$project$Main$getSearchResults = function (input) {
+	return $elm$http$Http$get(
+		{
+			expect: A2($elm$http$Http$expectJson, $author$project$Main$GotSearch, $author$project$Main$searchDecoder),
+			url: $author$project$Main$searchSongsUrl + ('?' + input)
+		});
+};
+var $jinjor$elm_debounce$Debounce$Flush = function (a) {
+	return {$: 'Flush', a: a};
+};
+var $jinjor$elm_debounce$Debounce$SendIfLengthNotChangedFrom = function (a) {
+	return {$: 'SendIfLengthNotChangedFrom', a: a};
+};
+var $elm$core$Process$sleep = _Process_sleep;
+var $jinjor$elm_debounce$Debounce$delayCmd = F2(
+	function (delay, msg) {
+		return A2(
+			$elm$core$Task$perform,
+			function (_v0) {
+				return msg;
+			},
+			$elm$core$Process$sleep(delay));
+	});
+var $jinjor$elm_debounce$Debounce$length = function (_v0) {
+	var input = _v0.a.input;
+	return $elm$core$List$length(input);
+};
+var $jinjor$elm_debounce$Debounce$push = F3(
+	function (config, a, _v0) {
+		var d = _v0.a;
+		var newDebounce = $jinjor$elm_debounce$Debounce$Debounce(
+			_Utils_update(
+				d,
+				{
+					input: A2($elm$core$List$cons, a, d.input)
+				}));
+		var selfCmd = function () {
+			var _v1 = config.strategy;
+			switch (_v1.$) {
+				case 'Manual':
+					var offset = _v1.a;
+					return d.locked ? $elm$core$Platform$Cmd$none : A2(
+						$jinjor$elm_debounce$Debounce$delayCmd,
+						offset,
+						$jinjor$elm_debounce$Debounce$Flush($elm$core$Maybe$Nothing));
+				case 'Soon':
+					var offset = _v1.a;
+					var delay = _v1.b;
+					return d.locked ? $elm$core$Platform$Cmd$none : A2(
+						$jinjor$elm_debounce$Debounce$delayCmd,
+						offset,
+						$jinjor$elm_debounce$Debounce$Flush(
+							$elm$core$Maybe$Just(delay)));
+				default:
+					var delay = _v1.a;
+					return A2(
+						$jinjor$elm_debounce$Debounce$delayCmd,
+						delay,
+						$jinjor$elm_debounce$Debounce$SendIfLengthNotChangedFrom(
+							$jinjor$elm_debounce$Debounce$length(newDebounce)));
+			}
+		}();
+		return _Utils_Tuple2(
+			newDebounce,
+			A2($elm$core$Platform$Cmd$map, config.transform, selfCmd));
+	});
+var $jinjor$elm_debounce$Debounce$takeLast = F3(
+	function (send, head, tail) {
+		return _Utils_Tuple2(
+			_List_Nil,
+			send(head));
+	});
+var $jinjor$elm_debounce$Debounce$update = F4(
+	function (config, send, msg, _v0) {
+		var d = _v0.a;
+		switch (msg.$) {
+			case 'NoOp':
+				return _Utils_Tuple2(
+					$jinjor$elm_debounce$Debounce$Debounce(d),
+					$elm$core$Platform$Cmd$none);
+			case 'Flush':
+				var tryAgainAfter = msg.a;
+				var _v2 = d.input;
+				if (_v2.b) {
+					var head = _v2.a;
+					var tail = _v2.b;
+					var selfCmd = function () {
+						if (tryAgainAfter.$ === 'Just') {
+							var delay = tryAgainAfter.a;
+							return A2(
+								$jinjor$elm_debounce$Debounce$delayCmd,
+								delay,
+								$jinjor$elm_debounce$Debounce$Flush(
+									$elm$core$Maybe$Just(delay)));
+						} else {
+							return $elm$core$Platform$Cmd$none;
+						}
+					}();
+					var _v3 = A2(send, head, tail);
+					var input = _v3.a;
+					var sendCmd = _v3.b;
+					return _Utils_Tuple2(
+						$jinjor$elm_debounce$Debounce$Debounce(
+							_Utils_update(
+								d,
+								{input: input, locked: true})),
+						$elm$core$Platform$Cmd$batch(
+							_List_fromArray(
+								[
+									sendCmd,
+									A2($elm$core$Platform$Cmd$map, config.transform, selfCmd)
+								])));
+				} else {
+					return _Utils_Tuple2(
+						$jinjor$elm_debounce$Debounce$Debounce(
+							_Utils_update(
+								d,
+								{locked: false})),
+						$elm$core$Platform$Cmd$none);
+				}
+			default:
+				var lastInputLength = msg.a;
+				var _v5 = _Utils_Tuple2(
+					_Utils_cmp(
+						$elm$core$List$length(d.input),
+						lastInputLength) < 1,
+					d.input);
+				if (_v5.a && _v5.b.b) {
+					var _v6 = _v5.b;
+					var head = _v6.a;
+					var tail = _v6.b;
+					var _v7 = A2(send, head, tail);
+					var input = _v7.a;
+					var cmd = _v7.b;
+					return _Utils_Tuple2(
+						$jinjor$elm_debounce$Debounce$Debounce(
+							_Utils_update(
+								d,
+								{input: input})),
+						cmd);
+				} else {
+					return _Utils_Tuple2(
+						$jinjor$elm_debounce$Debounce$Debounce(d),
+						$elm$core$Platform$Cmd$none);
+				}
+		}
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -10989,10 +11158,32 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'ChangeSearchInput':
 				var input = msg.a;
+				var _v3 = A3(
+					$jinjor$elm_debounce$Debounce$push,
+					$author$project$Main$debounceConfig($author$project$Main$DebounceSearch),
+					input,
+					model.searchDebouncer);
+				var newDebouncer = _v3.a;
+				var cmd = _v3.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{searchInput: input}),
+						{searchDebouncer: newDebouncer, searchInput: input}),
+					$elm$core$Platform$Cmd$none);
+			case 'DebounceSearch':
+				var msg_ = msg.a;
+				var _v4 = A4(
+					$jinjor$elm_debounce$Debounce$update,
+					$author$project$Main$debounceConfig($author$project$Main$DebounceSearch),
+					$jinjor$elm_debounce$Debounce$takeLast($author$project$Main$getSearchResults),
+					msg_,
+					model.searchDebouncer);
+				var newDebouncer = _v4.a;
+				var cmd = _v4.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{searchDebouncer: newDebouncer}),
 					$elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -11274,4 +11465,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.SpotifySong":{"args":[],"type":"{ artist : String.String, track : String.String, id : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"GotPlaying":["Result.Result Http.Error Main.SpotifySong"],"GotSearch":["Result.Result Http.Error (List.List Main.SpotifySong)"],"SetSearchActive":[],"ChangeSearchInput":["String.String"],"NoOp":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"List.List":{"args":["a"],"tags":{}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.SpotifySong":{"args":[],"type":"{ artist : String.String, track : String.String, id : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"GotPlaying":["Result.Result Http.Error Main.SpotifySong"],"DebounceSearch":["Debounce.Msg"],"GotSearch":["Result.Result Http.Error (List.List Main.SpotifySong)"],"SetSearchActive":[],"ChangeSearchInput":["String.String"],"NoOp":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"List.List":{"args":["a"],"tags":{}},"Debounce.Msg":{"args":[],"tags":{"NoOp":[],"Flush":["Maybe.Maybe Basics.Float"],"SendIfLengthNotChangedFrom":["Basics.Int"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}}}}})}});}(this));

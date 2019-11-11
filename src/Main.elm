@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Browser
+import Debounce exposing (Debounce)
 import FeatherIcons
 import Html exposing (Html, button, code, div, h1, input, span, text)
 import Html.Attributes exposing (class, placeholder)
@@ -25,6 +26,7 @@ type alias Model =
     , playing : Maybe SpotifySong
     , searchOpen : Bool
     , searchResults : List SpotifySong
+    , searchDebouncer : Debounce String
     }
 
 
@@ -39,6 +41,7 @@ subscriptions model =
 
 type Msg
     = GotPlaying (Result Http.Error SpotifySong)
+    | DebounceSearch Debounce.Msg
     | GotSearch (Result Http.Error (List SpotifySong))
     | SetSearchActive
     | ChangeSearchInput String
@@ -68,7 +71,22 @@ update msg model =
             ( { model | searchOpen = True }, Cmd.none )
 
         ChangeSearchInput input ->
-            ( { model | searchInput = input }, Cmd.none )
+            let
+                ( newDebouncer, cmd ) =
+                    Debounce.push (debounceConfig DebounceSearch) input model.searchDebouncer
+            in
+            ( { model | searchInput = input, searchDebouncer = newDebouncer }, Cmd.none )
+
+        DebounceSearch msg_ ->
+            let
+                ( newDebouncer, cmd ) =
+                    Debounce.update
+                        (debounceConfig DebounceSearch)
+                        (Debounce.takeLast getSearchResults)
+                        msg_
+                        model.searchDebouncer
+            in
+            ( { model | searchDebouncer = newDebouncer }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -121,6 +139,11 @@ view model =
 -- HTTP-requests
 
 
+debounceConfig : (Debounce.Msg -> Msg) -> Debounce.Config Msg
+debounceConfig debounceMsg =
+    { strategy = Debounce.later 1000, transform = debounceMsg }
+
+
 nowPlayingUrl : String
 nowPlayingUrl =
     "http://localhost:5000/v1/spotify/now_playing"
@@ -140,10 +163,10 @@ getNowPlaying =
         }
 
 
-getSearchResults : Cmd Msg
-getSearchResults =
+getSearchResults : String -> Cmd Msg
+getSearchResults input =
     Http.get
-        { url = searchSongsUrl
+        { url = searchSongsUrl ++ "?" ++ input
         , expect = Http.expectJson GotSearch searchDecoder
         }
 
@@ -172,6 +195,7 @@ init _ =
       , playing = Nothing
       , searchOpen = False
       , searchResults = []
+      , searchDebouncer = Debounce.init
       }
     , getNowPlaying
     )
