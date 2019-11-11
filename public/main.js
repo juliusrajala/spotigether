@@ -10525,6 +10525,15 @@ var $author$project$Main$SetPlaying = function (a) {
 };
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $author$project$Main$view = function (model) {
+	var track = function () {
+		var _v0 = model.playing;
+		if (_v0.$ === 'Nothing') {
+			return {artist: 'Nothing', id: '- - -', track: 'Nothing'};
+		} else {
+			var value = _v0.a;
+			return value;
+		}
+	}();
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
@@ -10556,91 +10565,45 @@ var $author$project$Main$view = function (model) {
 								$elm$html$Html$text('Gether')
 							]))
 					])),
-				function () {
-				var _v0 = model.playing;
-				if (_v0.$ === 'Nothing') {
-					return A2(
-						$elm$html$Html$div,
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('Track-Container')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$span,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('Track-Container')
+								$elm$html$Html$Attributes$class('Track-Label')
 							]),
 						_List_fromArray(
 							[
-								A2(
-								$elm$html$Html$span,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('Track-Label')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('No label')
-									])),
-								A2(
-								$elm$html$Html$span,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('Track-Artist')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('No Artist')
-									])),
-								A2(
-								$elm$html$Html$span,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('Track-ID')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('- - -')
-									]))
-							]));
-				} else {
-					var value = _v0.a;
-					return A2(
-						$elm$html$Html$div,
+								$elm$html$Html$text(track.track)
+							])),
+						A2(
+						$elm$html$Html$span,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('Track-Container')
+								$elm$html$Html$Attributes$class('Track-Artist')
 							]),
 						_List_fromArray(
 							[
-								A2(
-								$elm$html$Html$span,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('Track-Label')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text(value.track)
-									])),
-								A2(
-								$elm$html$Html$span,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('Track-Artist')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text(value.artist)
-									])),
-								A2(
-								$elm$html$Html$span,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('Track-ID')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text(value.id)
-									]))
-							]));
-				}
-			}(),
+								$elm$html$Html$text(track.artist)
+							])),
+						A2(
+						$elm$html$Html$span,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('Track-ID')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(track.id)
+							]))
+					])),
 				A2(
 				$elm$html$Html$button,
 				_List_fromArray(

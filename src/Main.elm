@@ -20,6 +20,7 @@ type alias SpotifySong =
 type alias Model =
     { input : String
     , playing : Maybe SpotifySong
+    , searchOpen : Bool
     }
 
 
@@ -27,6 +28,7 @@ init : Model
 init =
     { input = ""
     , playing = Nothing
+    , searchOpen = False
     }
 
 
@@ -43,24 +45,24 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
+    let
+        track =
+            case model.playing of
+                Nothing ->
+                    { artist = "No artist", track = "No song", id = "- - -" }
+
+                Just value ->
+                    value
+    in
     div []
         [ h1 []
             [ span [ class "Title--Spotify" ] [ text "Spoti" ]
             , span [ class "Title--App" ] [ text "Gether" ]
             ]
-        , case model.playing of
-            Nothing ->
-                div [ class "Track-Container" ]
-                    [ span [ class "Track-Label" ] [ text "No label" ]
-                    , span [ class "Track-Artist" ] [ text "No Artist" ]
-                    , span [ class "Track-ID" ] [ text "- - -" ]
-                    ]
-
-            Just value ->
-                div [ class "Track-Container" ]
-                    [ span [ class "Track-Label" ] [ text value.track ]
-                    , span [ class "Track-Artist" ] [ text value.artist ]
-                    , span [ class "Track-ID" ] [ text value.id ]
-                    ]
+        , div [ class "Track-Container" ]
+            [ span [ class "Track-Label" ] [ text track.track ]
+            , span [ class "Track-Artist" ] [ text track.artist ]
+            , span [ class "Track-ID" ] [ text track.id ]
+            ]
         , button [ onClick (SetPlaying { artist = "Elton John", track = "Rocket Man", id = "UUID_UUID_UUID" }) ] [ text "+" ]
         ]

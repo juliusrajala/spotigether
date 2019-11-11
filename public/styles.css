@@ -1,7 +1,7 @@
 :root {
   --spoti-color: #1db954;
   --app-color: #f2f2f2;
-  --color-black: #222222;
+  --color-black: #000000;
 }
 
 *,
@@ -41,8 +41,8 @@ h1 {
   color: #555555;
   display: flex;
   flex-direction: column;
-  border-radius: 2px;
-  box-shadow: 7px 7px 0px var(--spoti-color), 14px 14px 0px var(--app-color);
+  border-radius: 1px;
+  box-shadow: 3px 3px 0px var(--spoti-color), -3px -3px 0px var(--app-color);
 }
 
 .Track-Container > *:not(:last-child) {
