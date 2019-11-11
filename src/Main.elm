@@ -29,6 +29,7 @@ type alias Model =
     { searchInput : String
     , playing : Maybe SpotifySong
     , searchOpen : Bool
+    , searchResults : List SpotifySong
     }
 
 
@@ -37,6 +38,7 @@ init _ =
     ( { searchInput = ""
       , playing = Nothing
       , searchOpen = False
+      , searchResults = []
       }
     , getNowPlaying
     )
@@ -44,6 +46,7 @@ init _ =
 
 type Msg
     = GotPlaying (Result Http.Error SpotifySong)
+    | GotSearch (Result Http.Error (List SpotifySong))
     | SetSearchActive
     | ChangeSearchInput String
     | NoOp
@@ -59,6 +62,14 @@ update msg model =
 
                 Err _ ->
                     ( { model | playing = Nothing }, Cmd.none )
+
+        GotSearch result ->
+            case result of
+                Ok searchResults ->
+                    ( { model | searchResults = searchResults }, Cmd.none )
+
+                Err _ ->
+                    ( { model | searchResults = [] }, Cmd.none )
 
         SetSearchActive ->
             ( { model | searchOpen = True }, Cmd.none )
@@ -120,7 +131,7 @@ nowPlayingUrl =
 
 searchSongsUrl : String
 searchSongsUrl =
-    "localhost:5000/v1/spotify/search"
+    "http://localhost:5000/v1/spotify/search"
 
 
 getNowPlaying : Cmd Msg
@@ -128,5 +139,27 @@ getNowPlaying =
     Http.get
         { url = nowPlayingUrl
         , expect =
-            Http.expectJson GotPlaying (D.map3 SpotifySong (D.field "artist" D.string) (D.field "track" D.string) (D.field "id" D.string))
+            Http.expectJson GotPlaying songDecoder
         }
+
+
+getSearchResults : Cmd Msg
+getSearchResults =
+    Http.get
+        { url = searchSongsUrl
+        , expect = Http.expectJson GotSearch searchDecoder
+        }
+
+
+
+-- Decoders
+
+
+songDecoder : D.Decoder SpotifySong
+songDecoder =
+    D.map3 SpotifySong (D.field "artist" D.string) (D.field "track" D.string) (D.field "id" D.string)
+
+
+searchDecoder : D.Decoder (List SpotifySong)
+searchDecoder =
+    D.list songDecoder

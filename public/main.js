@@ -10666,13 +10666,9 @@ var $elm$core$Basics$never = function (_v0) {
 	}
 };
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Main$GotPlaying = function (a) {
-	return {$: 'GotPlaying', a: a};
+var $author$project$Main$GotSearch = function (a) {
+	return {$: 'GotSearch', a: a};
 };
-var $author$project$Main$SpotifySong = F3(
-	function (artist, track, id) {
-		return {artist: artist, id: id, track: track};
-	});
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
 		return {$: 'BadStatus_', a: a, b: b};
@@ -10921,24 +10917,27 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$Main$nowPlayingUrl = 'http://localhost:5000/v1/spotify/now_playing';
-var $author$project$Main$getNowPlaying = $elm$http$Http$get(
+var $author$project$Main$SpotifySong = F3(
+	function (artist, track, id) {
+		return {artist: artist, id: id, track: track};
+	});
+var $author$project$Main$songDecoder = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Main$SpotifySong,
+	A2($elm$json$Json$Decode$field, 'artist', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'track', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string));
+var $author$project$Main$searchDecoder = $elm$json$Json$Decode$list($author$project$Main$songDecoder);
+var $author$project$Main$searchSongsUrl = 'http://localhost:5000/v1/spotify/search';
+var $author$project$Main$getSearchResults = $elm$http$Http$get(
 	{
-		expect: A2(
-			$elm$http$Http$expectJson,
-			$author$project$Main$GotPlaying,
-			A4(
-				$elm$json$Json$Decode$map3,
-				$author$project$Main$SpotifySong,
-				A2($elm$json$Json$Decode$field, 'artist', $elm$json$Json$Decode$string),
-				A2($elm$json$Json$Decode$field, 'track', $elm$json$Json$Decode$string),
-				A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string))),
-		url: $author$project$Main$nowPlayingUrl
+		expect: A2($elm$http$Http$expectJson, $author$project$Main$GotSearch, $author$project$Main$searchDecoder),
+		url: $author$project$Main$searchSongsUrl
 	});
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{playing: $elm$core$Maybe$Nothing, searchInput: '', searchOpen: false},
-		$author$project$Main$getNowPlaying);
+		{playing: $elm$core$Maybe$Nothing, searchInput: '', searchOpen: false, searchResults: _List_Nil},
+		$author$project$Main$getSearchResults);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
@@ -10964,6 +10963,22 @@ var $author$project$Main$update = F2(
 						_Utils_update(
 							model,
 							{playing: $elm$core$Maybe$Nothing}),
+						$elm$core$Platform$Cmd$none);
+				}
+			case 'GotSearch':
+				var result = msg.a;
+				if (result.$ === 'Ok') {
+					var searchResults = result.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{searchResults: searchResults}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{searchResults: _List_Nil}),
 						$elm$core$Platform$Cmd$none);
 				}
 			case 'SetSearchActive':
@@ -11259,4 +11274,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.SpotifySong":{"args":[],"type":"{ artist : String.String, track : String.String, id : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"GotPlaying":["Result.Result Http.Error Main.SpotifySong"],"SetSearchActive":[],"ChangeSearchInput":["String.String"],"NoOp":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.SpotifySong":{"args":[],"type":"{ artist : String.String, track : String.String, id : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"GotPlaying":["Result.Result Http.Error Main.SpotifySong"],"GotSearch":["Result.Result Http.Error (List.List Main.SpotifySong)"],"SetSearchActive":[],"ChangeSearchInput":["String.String"],"NoOp":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"List.List":{"args":["a"],"tags":{}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}}}}})}});}(this));
