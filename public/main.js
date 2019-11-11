@@ -4893,9 +4893,6 @@ function _Browser_load(url)
 		}
 	}));
 }
-var $elm$core$Basics$False = {$: 'False'};
-var $elm$core$Maybe$Nothing = {$: 'Nothing'};
-var $author$project$Main$init = {input: '', playing: $elm$core$Maybe$Nothing, searchOpen: false};
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -4997,10 +4994,12 @@ var $elm$core$Result$Ok = function (a) {
 var $elm$json$Json$Decode$OneOf = function (a) {
 	return {$: 'OneOf', a: a};
 };
+var $elm$core$Basics$False = {$: 'False'};
 var $elm$core$Basics$add = _Basics_add;
 var $elm$core$Maybe$Just = function (a) {
 	return {$: 'Just', a: a};
 };
+var $elm$core$Maybe$Nothing = {$: 'Nothing'};
 var $elm$core$String$all = _String_all;
 var $elm$core$Basics$and = _Basics_and;
 var $elm$core$Basics$append = _Utils_append;
@@ -10491,35 +10490,49 @@ var $elm$core$Basics$never = function (_v0) {
 		continue never;
 	}
 };
+var $elm$browser$Browser$element = _Browser_element;
+var $author$project$Main$init = function (_v0) {
+	return _Utils_Tuple2(
+		{playing: $elm$core$Maybe$Nothing, searchInput: '', searchOpen: false},
+		$elm$core$Platform$Cmd$none);
+};
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $elm$browser$Browser$sandbox = function (impl) {
-	return _Browser_element(
-		{
-			init: function (_v0) {
-				return _Utils_Tuple2(impl.init, $elm$core$Platform$Cmd$none);
-			},
-			subscriptions: function (_v1) {
-				return $elm$core$Platform$Sub$none;
-			},
-			update: F2(
-				function (msg, model) {
-					return _Utils_Tuple2(
-						A2(impl.update, msg, model),
-						$elm$core$Platform$Cmd$none);
-				}),
-			view: impl.view
-		});
+var $author$project$Main$subscriptions = function (model) {
+	return $elm$core$Platform$Sub$none;
 };
 var $author$project$Main$update = F2(
 	function (msg, model) {
-		var song = msg.a;
-		return _Utils_update(
-			model,
-			{
-				playing: $elm$core$Maybe$Just(song)
-			});
+		switch (msg.$) {
+			case 'SetPlaying':
+				var song = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							playing: $elm$core$Maybe$Just(song)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'SetSearchActive':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{searchOpen: true}),
+					$elm$core$Platform$Cmd$none);
+			case 'ChangeSearchInput':
+				var input = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{searchInput: input}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		}
 	});
+var $author$project$Main$ChangeSearchInput = function (a) {
+	return {$: 'ChangeSearchInput', a: a};
+};
 var $author$project$Main$SetPlaying = function (a) {
 	return {$: 'SetPlaying', a: a};
 };
@@ -10694,7 +10707,8 @@ var $author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$Attributes$class('SearchBar-Text'),
-								$elm$html$Html$Attributes$placeholder('Search tracks')
+								$elm$html$Html$Attributes$placeholder('Search tracks'),
+								$elm$html$Html$Events$onInput($author$project$Main$ChangeSearchInput)
 							]),
 						_List_Nil),
 						A2($1602$elm_feather$FeatherIcons$toHtml, _List_Nil, $1602$elm_feather$FeatherIcons$search)
@@ -10804,7 +10818,7 @@ var $author$project$Main$view = function (model) {
 					]))
 			]));
 };
-var $author$project$Main$main = $elm$browser$Browser$sandbox(
-	{init: $author$project$Main$init, update: $author$project$Main$update, view: $author$project$Main$view});
+var $author$project$Main$main = $elm$browser$Browser$element(
+	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.SpotifySong":{"args":[],"type":"{ artist : String.String, track : String.String, id : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"SetPlaying":["Main.SpotifySong"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.SpotifySong":{"args":[],"type":"{ artist : String.String, track : String.String, id : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"SetPlaying":["Main.SpotifySong"],"SetSearchActive":[],"ChangeSearchInput":["String.String"],"NoOp":[]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));

@@ -4,11 +4,16 @@ import Browser
 import FeatherIcons
 import Html exposing (Html, button, code, div, h1, input, span, text)
 import Html.Attributes exposing (class, placeholder)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onInput)
 
 
 main =
-    Browser.sandbox { init = init, update = update, view = view }
+    Browser.element { init = init, update = update, subscriptions = subscriptions, view = view }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
 
 
 type alias SpotifySong =
@@ -18,30 +23,50 @@ type alias SpotifySong =
     }
 
 
+type HttpRequest
+    = Failure
+    | Loading
+    | Success (List SpotifySong)
+
+
 type alias Model =
-    { input : String
+    { searchInput : String
     , playing : Maybe SpotifySong
     , searchOpen : Bool
     }
 
 
-init : Model
-init =
-    { input = ""
-    , playing = Nothing
-    , searchOpen = False
-    }
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { searchInput = ""
+      , playing = Nothing
+      , searchOpen = False
+      }
+    , Cmd.none
+    )
 
 
 type Msg
     = SetPlaying SpotifySong
+    | SetSearchActive
+    | ChangeSearchInput String
+    | NoOp
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SetPlaying song ->
-            { model | playing = Just song }
+            ( { model | playing = Just song }, Cmd.none )
+
+        SetSearchActive ->
+            ( { model | searchOpen = True }, Cmd.none )
+
+        ChangeSearchInput input ->
+            ( { model | searchInput = input }, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -57,7 +82,7 @@ view model =
     in
     div [ class "SpotiGether-App" ]
         [ div [ class "SearchBar" ]
-            [ input [ class "SearchBar-Text", placeholder "Search tracks" ] []
+            [ input [ class "SearchBar-Text", placeholder "Search tracks", onInput ChangeSearchInput ] []
             , FeatherIcons.search |> FeatherIcons.toHtml []
             ]
         , div [ class "AppContainer" ]
