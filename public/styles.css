@@ -31,6 +31,7 @@ h1 {
   display: flex;
   flex-direction: column;
   height: 100%;
+  position: relative;
 }
 
 .AppContainer {
@@ -49,6 +50,7 @@ h1 {
   padding: 1rem;
   align-self: flex-end;
   cursor: pointer;
+  width: 100%;
 }
 
 .SearchBar > input {
@@ -58,6 +60,7 @@ h1 {
   background: transparent;
   padding: 0.5rem;
   font-size: 1rem;
+  flex: 1;
   border: none;
   border-bottom: 1px solid #555555;
 }
@@ -91,16 +94,56 @@ h1 {
   color: #555555;
   display: flex;
   flex-direction: column;
-  border-radius: 1px;
-  box-shadow: 3px 3px 0px var(--spoti-color), 6px 6px 0px var(--app-color);
+  border-left: 5px solid var(--spoti-color);
+  position: relative;
+  font-weight: 600;
 }
 
 .Track-Container > *:not(:last-child) {
   margin: 0 0 0.5rem 0;
 }
 
+.Track-Legend {
+  position: absolute;
+  font-weight: 400;
+  color: var(--spoti-color);
+  font-size: 1rem;
+  top: 0;
+  left: 1rem;
+}
+
 .Track-Label {
   font-size: 1.5rem;
+  color: var(--app-color);
   font-weight: 600;
-  color: var(--spoti-color);
+}
+
+.SearchContainer {
+  border: 1px solid #222;
+  color: var(--app-color);
+  background: var(--color-black);
+  width: 450px;
+  max-width: 100%;
+  position: absolute;
+  z-index: 2;
+  top: 60px;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 2px;
+  padding: 1rem;
+}
+
+.SearchResult {
+  padding: 0.5rem;
+  color: #555555;
+}
+
+.SearchResult:not(:last-child) {
+  border-bottom: 1px solid #222222;
+}
+
+.SearchResult > *:first-child {
+  color: var(--app-color);
+  font-weight: 600;
+  padding-right: 1rem;
 }

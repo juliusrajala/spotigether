@@ -3,11 +3,12 @@ module Main exposing (..)
 import Browser
 import Debounce exposing (Debounce)
 import FeatherIcons
-import Html exposing (Html, button, code, div, h1, input, span, text)
+import Html exposing (Attribute, Html, button, code, div, h1, input, li, span, text, ul)
 import Html.Attributes exposing (class, placeholder)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onBlur, onClick, onFocus, onInput)
 import Http
 import Json.Decode as D
+import Task
 
 
 
@@ -68,25 +69,30 @@ update msg model =
                     ( { model | searchResults = [] }, Cmd.none )
 
         SetSearchActive ->
-            ( { model | searchOpen = True }, Cmd.none )
+            ( { model | searchOpen = not model.searchOpen }, Cmd.none )
 
         ChangeSearchInput input ->
             let
                 ( newDebouncer, cmd ) =
-                    Debounce.push (debounceConfig DebounceSearch) input model.searchDebouncer
+                    Debounce.push
+                        (debounceConfig DebounceSearch)
+                        input
+                        model.searchDebouncer
             in
-            ( { model | searchInput = input, searchDebouncer = newDebouncer }, Cmd.none )
+            ( { model | searchInput = input, searchDebouncer = newDebouncer }
+            , cmd
+            )
 
         DebounceSearch msg_ ->
             let
                 ( newDebouncer, cmd ) =
                     Debounce.update
                         (debounceConfig DebounceSearch)
-                        (Debounce.takeLast getSearchResults)
+                        (Debounce.takeLast search)
                         msg_
                         model.searchDebouncer
             in
-            ( { model | searchDebouncer = newDebouncer }, Cmd.none )
+            ( { model | searchDebouncer = newDebouncer }, cmd )
 
         NoOp ->
             ( model, Cmd.none )
@@ -109,7 +115,14 @@ view model =
     in
     div [ class "SpotiGether-App" ]
         [ div [ class "SearchBar" ]
-            [ input [ class "SearchBar-Text", placeholder "Search tracks", onInput ChangeSearchInput ] []
+            [ input
+                [ class "SearchBar-Text"
+                , placeholder "Search tracks"
+                , onInput ChangeSearchInput
+                , onFocus SetSearchActive
+                , onBlur SetSearchActive
+                ]
+                []
             , FeatherIcons.search |> FeatherIcons.toHtml []
             ]
         , div [ class "AppContainer" ]
@@ -119,19 +132,33 @@ view model =
                 , span [ class "Title--App" ] [ text "Gether" ]
                 ]
             , div [ class "Track-Container" ]
-                [ span [ class "Track-Label" ] [ text track.track ]
+                [ span [ class "Track-Legend" ] [ text "Now playing:" ]
+                , span [ class "Track-Label" ] [ text track.track ]
                 , span [ class "Track-Artist" ] [ text track.artist ]
                 , span [ class "Track-ID" ] [ text track.id ]
                 ]
             , case model.searchOpen of
                 True ->
-                    div [ class "Search-Container" ]
-                        [ input [] []
+                    div [ class "SearchContainer" ]
+                        [ if List.length model.searchResults > 0 then
+                            ul []
+                                (List.map searchItem model.searchResults)
+
+                          else
+                            span [] [ text "No results found" ]
                         ]
 
                 False ->
                     span [] []
             ]
+        ]
+
+
+searchItem : SpotifySong -> Html Msg
+searchItem song =
+    li [ class "SearchResult" ]
+        [ span [ class "SearchResult-Label" ] [ text song.track ]
+        , span [ class "SearchResult-Label" ] [ text song.artist ]
         ]
 
 
@@ -142,6 +169,15 @@ view model =
 debounceConfig : (Debounce.Msg -> Msg) -> Debounce.Config Msg
 debounceConfig debounceMsg =
     { strategy = Debounce.later 1000, transform = debounceMsg }
+
+
+search : String -> Cmd Msg
+search input =
+    if String.length input > 3 then
+        getSearchResults input
+
+    else
+        Cmd.none
 
 
 nowPlayingUrl : String
@@ -166,7 +202,7 @@ getNowPlaying =
 getSearchResults : String -> Cmd Msg
 getSearchResults input =
     Http.get
-        { url = searchSongsUrl ++ "?" ++ input
+        { url = searchSongsUrl ++ "?query" ++ "=" ++ input
         , expect = Http.expectJson GotSearch searchDecoder
         }
 

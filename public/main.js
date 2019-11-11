@@ -10961,18 +10961,6 @@ var $author$project$Main$debounceConfig = function (debounceMsg) {
 		transform: debounceMsg
 	};
 };
-var $author$project$Main$GotSearch = function (a) {
-	return {$: 'GotSearch', a: a};
-};
-var $author$project$Main$searchDecoder = $elm$json$Json$Decode$list($author$project$Main$songDecoder);
-var $author$project$Main$searchSongsUrl = 'http://localhost:5000/v1/spotify/search';
-var $author$project$Main$getSearchResults = function (input) {
-	return $elm$http$Http$get(
-		{
-			expect: A2($elm$http$Http$expectJson, $author$project$Main$GotSearch, $author$project$Main$searchDecoder),
-			url: $author$project$Main$searchSongsUrl + ('?' + input)
-		});
-};
 var $jinjor$elm_debounce$Debounce$Flush = function (a) {
 	return {$: 'Flush', a: a};
 };
@@ -11032,6 +11020,21 @@ var $jinjor$elm_debounce$Debounce$push = F3(
 			newDebounce,
 			A2($elm$core$Platform$Cmd$map, config.transform, selfCmd));
 	});
+var $author$project$Main$GotSearch = function (a) {
+	return {$: 'GotSearch', a: a};
+};
+var $author$project$Main$searchDecoder = $elm$json$Json$Decode$list($author$project$Main$songDecoder);
+var $author$project$Main$searchSongsUrl = 'http://localhost:5000/v1/spotify/search';
+var $author$project$Main$getSearchResults = function (input) {
+	return $elm$http$Http$get(
+		{
+			expect: A2($elm$http$Http$expectJson, $author$project$Main$GotSearch, $author$project$Main$searchDecoder),
+			url: $author$project$Main$searchSongsUrl + ('?query' + ('=' + input))
+		});
+};
+var $author$project$Main$search = function (input) {
+	return ($elm$core$String$length(input) > 3) ? $author$project$Main$getSearchResults(input) : $elm$core$Platform$Cmd$none;
+};
 var $jinjor$elm_debounce$Debounce$takeLast = F3(
 	function (send, head, tail) {
 		return _Utils_Tuple2(
@@ -11154,7 +11157,7 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{searchOpen: true}),
+						{searchOpen: !model.searchOpen}),
 					$elm$core$Platform$Cmd$none);
 			case 'ChangeSearchInput':
 				var input = msg.a;
@@ -11169,13 +11172,13 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{searchDebouncer: newDebouncer, searchInput: input}),
-					$elm$core$Platform$Cmd$none);
+					cmd);
 			case 'DebounceSearch':
 				var msg_ = msg.a;
 				var _v4 = A4(
 					$jinjor$elm_debounce$Debounce$update,
 					$author$project$Main$debounceConfig($author$project$Main$DebounceSearch),
-					$jinjor$elm_debounce$Debounce$takeLast($author$project$Main$getSearchResults),
+					$jinjor$elm_debounce$Debounce$takeLast($author$project$Main$search),
 					msg_,
 					model.searchDebouncer);
 				var newDebouncer = _v4.a;
@@ -11184,7 +11187,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{searchDebouncer: newDebouncer}),
-					$elm$core$Platform$Cmd$none);
+					cmd);
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
@@ -11192,7 +11195,20 @@ var $author$project$Main$update = F2(
 var $author$project$Main$ChangeSearchInput = function (a) {
 	return {$: 'ChangeSearchInput', a: a};
 };
+var $author$project$Main$SetSearchActive = {$: 'SetSearchActive'};
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$html$Html$Events$onBlur = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'blur',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$html$Html$Events$onFocus = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'focus',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
@@ -11290,6 +11306,37 @@ var $1602$elm_feather$FeatherIcons$search = A2(
 					_List_Nil)
 				]))
 		]));
+var $author$project$Main$searchItem = function (song) {
+	return A2(
+		$elm$html$Html$li,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('SearchResult')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$span,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('SearchResult-Label')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(song.track)
+					])),
+				A2(
+				$elm$html$Html$span,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('SearchResult-Label')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(song.artist)
+					]))
+			]));
+};
 var $elm$svg$Svg$map = $elm$virtual_dom$VirtualDom$map;
 var $1602$elm_feather$FeatherIcons$toHtml = F2(
 	function (attributes, _v0) {
@@ -11364,7 +11411,9 @@ var $author$project$Main$view = function (model) {
 							[
 								$elm$html$Html$Attributes$class('SearchBar-Text'),
 								$elm$html$Html$Attributes$placeholder('Search tracks'),
-								$elm$html$Html$Events$onInput($author$project$Main$ChangeSearchInput)
+								$elm$html$Html$Events$onInput($author$project$Main$ChangeSearchInput),
+								$elm$html$Html$Events$onFocus($author$project$Main$SetSearchActive),
+								$elm$html$Html$Events$onBlur($author$project$Main$SetSearchActive)
 							]),
 						_List_Nil),
 						A2($1602$elm_feather$FeatherIcons$toHtml, _List_Nil, $1602$elm_feather$FeatherIcons$search)
@@ -11415,6 +11464,16 @@ var $author$project$Main$view = function (model) {
 								$elm$html$Html$span,
 								_List_fromArray(
 									[
+										$elm$html$Html$Attributes$class('Track-Legend')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Now playing:')
+									])),
+								A2(
+								$elm$html$Html$span,
+								_List_fromArray(
+									[
 										$elm$html$Html$Attributes$class('Track-Label')
 									]),
 								_List_fromArray(
@@ -11449,11 +11508,20 @@ var $author$project$Main$view = function (model) {
 								$elm$html$Html$div,
 								_List_fromArray(
 									[
-										$elm$html$Html$Attributes$class('Search-Container')
+										$elm$html$Html$Attributes$class('SearchContainer')
 									]),
 								_List_fromArray(
 									[
-										A2($elm$html$Html$input, _List_Nil, _List_Nil)
+										($elm$core$List$length(model.searchResults) > 0) ? A2(
+										$elm$html$Html$ul,
+										_List_Nil,
+										A2($elm$core$List$map, $author$project$Main$searchItem, model.searchResults)) : A2(
+										$elm$html$Html$span,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('No results found')
+											]))
 									]));
 						} else {
 							return A2($elm$html$Html$span, _List_Nil, _List_Nil);
