@@ -25,6 +25,7 @@ h1 {
   font-family: Asap, Helvetica, sans-serif;
   font-weight: 600;
   font-size: 4rem;
+  text-align: center;
 }
 
 .SpotiGether-App {
@@ -32,6 +33,9 @@ h1 {
   flex-direction: column;
   height: 100%;
   position: relative;
+  max-width: 500px;
+  width: 100%;
+  padding: 0.5rem;
 }
 
 .AppContainer {
@@ -88,7 +92,7 @@ h1 {
 }
 
 .Track-Container {
-  margin: 4rem 0rem;
+  margin: 5rem 0rem;
   padding: 2rem;
   background: #000;
   color: #555555;
@@ -97,6 +101,7 @@ h1 {
   border-left: 5px solid var(--spoti-color);
   position: relative;
   font-weight: 600;
+  width: 100%;
 }
 
 .Track-Container > *:not(:last-child) {
@@ -118,17 +123,29 @@ h1 {
   font-weight: 600;
 }
 
+.Track-Extra {
+  font-size: 0.9rem;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.Track-Extra:last-child {
+  color: var(--spoti-color);
+}
+
 .SearchContainer {
   border: 1px solid #555;
   color: var(--app-color);
   background: var(--color-black);
-  width: 450px;
-  max-width: 100%;
+  width: 100%;
+  left: 0rem;
+  right: 0rem;
   position: absolute;
   z-index: 2;
-  top: 60px;
-  margin-left: auto;
-  margin-right: auto;
+  top: 10vh;
   border-radius: 2px;
   padding: 1rem;
   max-height: 80vh;
@@ -158,4 +175,30 @@ h1 {
   font-weight: 600;
   padding-right: 1rem;
   padding-bottom: 0.25rem;
+}
+
+.PlayerControls {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  margin-top: 2rem;
+  justify-content: space-around;
+}
+
+.PlayerControls-Button {
+  background: transparent;
+  border: none;
+  color: var(--app-color);
+  background: #222;
+  height: 60px;
+  width: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.PlayerControls-Button:hover {
+  background: var(--spoti-color);
+  color: #000000;
 }

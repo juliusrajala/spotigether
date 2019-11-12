@@ -8,6 +8,7 @@ import Html.Attributes exposing (class, placeholder)
 import Html.Events exposing (onBlur, onClick, onFocus, onInput)
 import Http
 import Json.Decode as D
+import Json.Encode as E
 import Task
 
 
@@ -19,6 +20,7 @@ type alias SpotifySong =
     { artist : String
     , track : String
     , id : String
+    , album : String
     }
 
 
@@ -42,16 +44,29 @@ subscriptions model =
 
 type Msg
     = GotPlaying (Result Http.Error SpotifySong)
-    | DebounceSearch Debounce.Msg
+    | MadeCommand (Result Http.Error SpotifySong)
     | GotSearch (Result Http.Error (List SpotifySong))
-    | SetSearchActive
+    | SendCommand String
+    | DebounceSearch Debounce.Msg
     | ChangeSearchInput String
+    | SetSearchActive
     | NoOp
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        SendCommand command ->
+            ( model, postControlChange command )
+
+        MadeCommand result ->
+            case result of
+                Ok song ->
+                    ( { model | playing = Just song }, Cmd.none )
+
+                Err _ ->
+                    ( { model | playing = Nothing }, Cmd.none )
+
         GotPlaying result ->
             case result of
                 Ok song ->
@@ -108,7 +123,7 @@ view model =
         track =
             case model.playing of
                 Nothing ->
-                    { artist = "No artist", track = "No song", id = "- - -" }
+                    { artist = " - ", track = " - ", album = " - ", id = "- - -" }
 
                 Just value ->
                     value
@@ -134,9 +149,11 @@ view model =
             , div [ class "Track-Container" ]
                 [ span [ class "Track-Legend" ] [ text "Now playing:" ]
                 , span [ class "Track-Label" ] [ text track.track ]
-                , span [ class "Track-Artist" ] [ text track.artist ]
-                , span [ class "Track-ID" ] [ text track.id ]
+                , span [ class "Track-Extra" ] [ text ("Artisti: " ++ track.artist) ]
+                , span [ class "Track-Extra" ] [ text ("Albumi: " ++ track.album) ]
+                , span [ class "Track-Extra" ] [ text track.id ]
                 ]
+            , controls
             , case model.searchOpen of
                 True ->
                     div [ class "SearchContainer" ]
@@ -162,8 +179,13 @@ searchItem song =
         ]
 
 
-
--- HTTP-requests
+controls : Html Msg
+controls =
+    div [ class "PlayerControls" ]
+        [ button [ class "PlayerControls-Button", onClick (SendCommand "previous") ] [ FeatherIcons.skipBack |> FeatherIcons.toHtml [] ]
+        , button [ class "PlayerControls-Button", onClick (SendCommand "play") ] [ FeatherIcons.play |> FeatherIcons.toHtml [] ]
+        , button [ class "PlayerControls-Button", onClick (SendCommand "next") ] [ FeatherIcons.skipForward |> FeatherIcons.toHtml [] ]
+        ]
 
 
 debounceConfig : (Debounce.Msg -> Msg) -> Debounce.Config Msg
@@ -190,6 +212,11 @@ searchSongsUrl =
     "http://localhost:5000/v1/spotify/search"
 
 
+postControlUrl : String
+postControlUrl =
+    "http://localhost:5000/v1/spotify/control"
+
+
 getNowPlaying : Cmd Msg
 getNowPlaying =
     Http.get
@@ -207,13 +234,30 @@ getSearchResults input =
         }
 
 
+postControlChange : String -> Cmd Msg
+postControlChange command =
+    Http.request
+        { url = postControlUrl
+        , body = Http.jsonBody <| E.object [ ( "command", E.string command ) ]
+        , expect = Http.expectJson GotPlaying songDecoder
+        , method = "POST"
+        , timeout = Nothing
+        , tracker = Nothing
+        , headers = []
+        }
+
+
 
 -- Decoders
 
 
 songDecoder : D.Decoder SpotifySong
 songDecoder =
-    D.map3 SpotifySong (D.field "artist" D.string) (D.field "track" D.string) (D.field "id" D.string)
+    D.map4 SpotifySong
+        (D.field "artist" D.string)
+        (D.field "track" D.string)
+        (D.field "id" D.string)
+        (D.field "album" D.string)
 
 
 searchDecoder : D.Decoder (List SpotifySong)

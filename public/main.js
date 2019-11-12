@@ -10918,16 +10918,18 @@ var $elm$http$Http$get = function (r) {
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
 var $author$project$Main$nowPlayingUrl = 'http://localhost:5000/v1/spotify/now_playing';
-var $author$project$Main$SpotifySong = F3(
-	function (artist, track, id) {
-		return {artist: artist, id: id, track: track};
+var $author$project$Main$SpotifySong = F4(
+	function (artist, track, id, album) {
+		return {album: album, artist: artist, id: id, track: track};
 	});
-var $author$project$Main$songDecoder = A4(
-	$elm$json$Json$Decode$map3,
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $author$project$Main$songDecoder = A5(
+	$elm$json$Json$Decode$map4,
 	$author$project$Main$SpotifySong,
 	A2($elm$json$Json$Decode$field, 'artist', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'track', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string));
+	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'album', $elm$json$Json$Decode$string));
 var $author$project$Main$getNowPlaying = $elm$http$Http$get(
 	{
 		expect: A2($elm$http$Http$expectJson, $author$project$Main$GotPlaying, $author$project$Main$songDecoder),
@@ -10960,6 +10962,32 @@ var $author$project$Main$debounceConfig = function (debounceMsg) {
 		strategy: $jinjor$elm_debounce$Debounce$later(1000),
 		transform: debounceMsg
 	};
+};
+var $elm$http$Http$jsonBody = function (value) {
+	return A2(
+		_Http_pair,
+		'application/json',
+		A2($elm$json$Json$Encode$encode, 0, value));
+};
+var $author$project$Main$postControlUrl = 'http://localhost:5000/v1/spotify/control';
+var $author$project$Main$postControlChange = function (command) {
+	return $elm$http$Http$request(
+		{
+			body: $elm$http$Http$jsonBody(
+				$elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'command',
+							$elm$json$Json$Encode$string(command))
+						]))),
+			expect: A2($elm$http$Http$expectJson, $author$project$Main$GotPlaying, $author$project$Main$songDecoder),
+			headers: _List_Nil,
+			method: 'POST',
+			timeout: $elm$core$Maybe$Nothing,
+			tracker: $elm$core$Maybe$Nothing,
+			url: $author$project$Main$postControlUrl
+		});
 };
 var $jinjor$elm_debounce$Debounce$Flush = function (a) {
 	return {$: 'Flush', a: a};
@@ -11119,6 +11147,29 @@ var $jinjor$elm_debounce$Debounce$update = F4(
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
+			case 'SendCommand':
+				var command = msg.a;
+				return _Utils_Tuple2(
+					model,
+					$author$project$Main$postControlChange(command));
+			case 'MadeCommand':
+				var result = msg.a;
+				if (result.$ === 'Ok') {
+					var song = result.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								playing: $elm$core$Maybe$Just(song)
+							}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{playing: $elm$core$Maybe$Nothing}),
+						$elm$core$Platform$Cmd$none);
+				}
 			case 'GotPlaying':
 				var result = msg.a;
 				if (result.$ === 'Ok') {
@@ -11161,13 +11212,13 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'ChangeSearchInput':
 				var input = msg.a;
-				var _v3 = A3(
+				var _v4 = A3(
 					$jinjor$elm_debounce$Debounce$push,
 					$author$project$Main$debounceConfig($author$project$Main$DebounceSearch),
 					input,
 					model.searchDebouncer);
-				var newDebouncer = _v3.a;
-				var cmd = _v3.b;
+				var newDebouncer = _v4.a;
+				var cmd = _v4.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -11175,14 +11226,14 @@ var $author$project$Main$update = F2(
 					cmd);
 			case 'DebounceSearch':
 				var msg_ = msg.a;
-				var _v4 = A4(
+				var _v5 = A4(
 					$jinjor$elm_debounce$Debounce$update,
 					$author$project$Main$debounceConfig($author$project$Main$DebounceSearch),
 					$jinjor$elm_debounce$Debounce$takeLast($author$project$Main$search),
 					msg_,
 					model.searchDebouncer);
-				var newDebouncer = _v4.a;
-				var cmd = _v4.b;
+				var newDebouncer = _v5.a;
+				var cmd = _v5.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -11196,28 +11247,12 @@ var $author$project$Main$ChangeSearchInput = function (a) {
 	return {$: 'ChangeSearchInput', a: a};
 };
 var $author$project$Main$SetSearchActive = {$: 'SetSearchActive'};
-var $elm$html$Html$h1 = _VirtualDom_node('h1');
-var $elm$html$Html$Events$onBlur = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'blur',
-		$elm$json$Json$Decode$succeed(msg));
+var $author$project$Main$SendCommand = function (a) {
+	return {$: 'SendCommand', a: a};
 };
-var $elm$html$Html$Events$onFocus = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'focus',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
-var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
-var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
 var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
 var $1602$elm_feather$FeatherIcons$Icon = function (a) {
 	return {$: 'Icon', a: a};
 };
@@ -11238,7 +11273,9 @@ var $1602$elm_feather$FeatherIcons$makeBuilder = F2(
 				src: src
 			});
 	});
-var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $elm$svg$Svg$Attributes$points = _VirtualDom_attribute('points');
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$polygon = $elm$svg$Svg$trustedNode('polygon');
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
 var $elm$svg$Svg$Attributes$strokeLinejoin = _VirtualDom_attribute('stroke-linejoin');
@@ -11246,8 +11283,6 @@ var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
-var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
 var $elm$virtual_dom$VirtualDom$property = F2(
 	function (key, value) {
 		return A2(
@@ -11261,8 +11296,229 @@ var $1602$elm_feather$FeatherIcons$xmlns = function (s) {
 		'xmlns',
 		$elm$json$Json$Encode$string(s));
 };
+var $1602$elm_feather$FeatherIcons$play = A2(
+	$1602$elm_feather$FeatherIcons$makeBuilder,
+	'play',
+	_List_fromArray(
+		[
+			A2(
+			$elm$svg$Svg$svg,
+			_List_fromArray(
+				[
+					$1602$elm_feather$FeatherIcons$xmlns('http://www.w3.org/2000/svg'),
+					$elm$svg$Svg$Attributes$width('24'),
+					$elm$svg$Svg$Attributes$height('24'),
+					$elm$svg$Svg$Attributes$viewBox('0 0 24 24'),
+					$elm$svg$Svg$Attributes$fill('none'),
+					$elm$svg$Svg$Attributes$stroke('currentColor'),
+					$elm$svg$Svg$Attributes$strokeWidth('2'),
+					$elm$svg$Svg$Attributes$strokeLinecap('round'),
+					$elm$svg$Svg$Attributes$strokeLinejoin('round'),
+					$elm$svg$Svg$Attributes$class('feather feather-play')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$polygon,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$points('5 3 19 12 5 21 5 3')
+						]),
+					_List_Nil)
+				]))
+		]));
+var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
+var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
+var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
+var $1602$elm_feather$FeatherIcons$skipBack = A2(
+	$1602$elm_feather$FeatherIcons$makeBuilder,
+	'skip-back',
+	_List_fromArray(
+		[
+			A2(
+			$elm$svg$Svg$svg,
+			_List_fromArray(
+				[
+					$1602$elm_feather$FeatherIcons$xmlns('http://www.w3.org/2000/svg'),
+					$elm$svg$Svg$Attributes$width('24'),
+					$elm$svg$Svg$Attributes$height('24'),
+					$elm$svg$Svg$Attributes$viewBox('0 0 24 24'),
+					$elm$svg$Svg$Attributes$fill('none'),
+					$elm$svg$Svg$Attributes$stroke('currentColor'),
+					$elm$svg$Svg$Attributes$strokeWidth('2'),
+					$elm$svg$Svg$Attributes$strokeLinecap('round'),
+					$elm$svg$Svg$Attributes$strokeLinejoin('round'),
+					$elm$svg$Svg$Attributes$class('feather feather-skip-back')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$polygon,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$points('19 20 9 12 19 4 19 20')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1('5'),
+							$elm$svg$Svg$Attributes$y1('19'),
+							$elm$svg$Svg$Attributes$x2('5'),
+							$elm$svg$Svg$Attributes$y2('5')
+						]),
+					_List_Nil)
+				]))
+		]));
+var $1602$elm_feather$FeatherIcons$skipForward = A2(
+	$1602$elm_feather$FeatherIcons$makeBuilder,
+	'skip-forward',
+	_List_fromArray(
+		[
+			A2(
+			$elm$svg$Svg$svg,
+			_List_fromArray(
+				[
+					$1602$elm_feather$FeatherIcons$xmlns('http://www.w3.org/2000/svg'),
+					$elm$svg$Svg$Attributes$width('24'),
+					$elm$svg$Svg$Attributes$height('24'),
+					$elm$svg$Svg$Attributes$viewBox('0 0 24 24'),
+					$elm$svg$Svg$Attributes$fill('none'),
+					$elm$svg$Svg$Attributes$stroke('currentColor'),
+					$elm$svg$Svg$Attributes$strokeWidth('2'),
+					$elm$svg$Svg$Attributes$strokeLinecap('round'),
+					$elm$svg$Svg$Attributes$strokeLinejoin('round'),
+					$elm$svg$Svg$Attributes$class('feather feather-skip-forward')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$polygon,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$points('5 4 15 12 5 20 5 4')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1('19'),
+							$elm$svg$Svg$Attributes$y1('5'),
+							$elm$svg$Svg$Attributes$x2('19'),
+							$elm$svg$Svg$Attributes$y2('19')
+						]),
+					_List_Nil)
+				]))
+		]));
+var $elm$svg$Svg$map = $elm$virtual_dom$VirtualDom$map;
+var $1602$elm_feather$FeatherIcons$toHtml = F2(
+	function (attributes, _v0) {
+		var src = _v0.a.src;
+		var attrs = _v0.a.attrs;
+		var strSize = $elm$core$String$fromFloat(attrs.size);
+		var baseAttributes = _List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$fill('none'),
+				$elm$svg$Svg$Attributes$height(
+				_Utils_ap(strSize, attrs.sizeUnit)),
+				$elm$svg$Svg$Attributes$width(
+				_Utils_ap(strSize, attrs.sizeUnit)),
+				$elm$svg$Svg$Attributes$stroke('currentColor'),
+				$elm$svg$Svg$Attributes$strokeLinecap('round'),
+				$elm$svg$Svg$Attributes$strokeLinejoin('round'),
+				$elm$svg$Svg$Attributes$strokeWidth(
+				$elm$core$String$fromFloat(attrs.strokeWidth)),
+				$elm$svg$Svg$Attributes$viewBox(attrs.viewBox)
+			]);
+		var combinedAttributes = _Utils_ap(
+			function () {
+				var _v1 = attrs._class;
+				if (_v1.$ === 'Just') {
+					var c = _v1.a;
+					return A2(
+						$elm$core$List$cons,
+						$elm$svg$Svg$Attributes$class(c),
+						baseAttributes);
+				} else {
+					return baseAttributes;
+				}
+			}(),
+			attributes);
+		return A2(
+			$elm$svg$Svg$svg,
+			combinedAttributes,
+			A2(
+				$elm$core$List$map,
+				$elm$svg$Svg$map($elm$core$Basics$never),
+				src));
+	});
+var $author$project$Main$controls = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('PlayerControls')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('PlayerControls-Button'),
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$SendCommand('previous'))
+				]),
+			_List_fromArray(
+				[
+					A2($1602$elm_feather$FeatherIcons$toHtml, _List_Nil, $1602$elm_feather$FeatherIcons$skipBack)
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('PlayerControls-Button'),
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$SendCommand('play'))
+				]),
+			_List_fromArray(
+				[
+					A2($1602$elm_feather$FeatherIcons$toHtml, _List_Nil, $1602$elm_feather$FeatherIcons$play)
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('PlayerControls-Button'),
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$SendCommand('next'))
+				]),
+			_List_fromArray(
+				[
+					A2($1602$elm_feather$FeatherIcons$toHtml, _List_Nil, $1602$elm_feather$FeatherIcons$skipForward)
+				]))
+		]));
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$html$Html$Events$onBlur = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'blur',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$html$Html$Events$onFocus = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'focus',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
 var $1602$elm_feather$FeatherIcons$search = A2(
 	$1602$elm_feather$FeatherIcons$makeBuilder,
 	'search',
@@ -11337,53 +11593,11 @@ var $author$project$Main$searchItem = function (song) {
 					]))
 			]));
 };
-var $elm$svg$Svg$map = $elm$virtual_dom$VirtualDom$map;
-var $1602$elm_feather$FeatherIcons$toHtml = F2(
-	function (attributes, _v0) {
-		var src = _v0.a.src;
-		var attrs = _v0.a.attrs;
-		var strSize = $elm$core$String$fromFloat(attrs.size);
-		var baseAttributes = _List_fromArray(
-			[
-				$elm$svg$Svg$Attributes$fill('none'),
-				$elm$svg$Svg$Attributes$height(
-				_Utils_ap(strSize, attrs.sizeUnit)),
-				$elm$svg$Svg$Attributes$width(
-				_Utils_ap(strSize, attrs.sizeUnit)),
-				$elm$svg$Svg$Attributes$stroke('currentColor'),
-				$elm$svg$Svg$Attributes$strokeLinecap('round'),
-				$elm$svg$Svg$Attributes$strokeLinejoin('round'),
-				$elm$svg$Svg$Attributes$strokeWidth(
-				$elm$core$String$fromFloat(attrs.strokeWidth)),
-				$elm$svg$Svg$Attributes$viewBox(attrs.viewBox)
-			]);
-		var combinedAttributes = _Utils_ap(
-			function () {
-				var _v1 = attrs._class;
-				if (_v1.$ === 'Just') {
-					var c = _v1.a;
-					return A2(
-						$elm$core$List$cons,
-						$elm$svg$Svg$Attributes$class(c),
-						baseAttributes);
-				} else {
-					return baseAttributes;
-				}
-			}(),
-			attributes);
-		return A2(
-			$elm$svg$Svg$svg,
-			combinedAttributes,
-			A2(
-				$elm$core$List$map,
-				$elm$svg$Svg$map($elm$core$Basics$never),
-				src));
-	});
 var $author$project$Main$view = function (model) {
 	var track = function () {
 		var _v1 = model.playing;
 		if (_v1.$ === 'Nothing') {
-			return {artist: 'No artist', id: '- - -', track: 'No song'};
+			return {album: ' - ', artist: ' - ', id: '- - -', track: ' - '};
 		} else {
 			var value = _v1.a;
 			return value;
@@ -11484,23 +11698,34 @@ var $author$project$Main$view = function (model) {
 								$elm$html$Html$span,
 								_List_fromArray(
 									[
-										$elm$html$Html$Attributes$class('Track-Artist')
+										$elm$html$Html$Attributes$class('Track-Extra')
 									]),
 								_List_fromArray(
 									[
-										$elm$html$Html$text(track.artist)
+										$elm$html$Html$text('Artisti: ' + track.artist)
 									])),
 								A2(
 								$elm$html$Html$span,
 								_List_fromArray(
 									[
-										$elm$html$Html$Attributes$class('Track-ID')
+										$elm$html$Html$Attributes$class('Track-Extra')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Albumi: ' + track.album)
+									])),
+								A2(
+								$elm$html$Html$span,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('Track-Extra')
 									]),
 								_List_fromArray(
 									[
 										$elm$html$Html$text(track.id)
 									]))
 							])),
+						$author$project$Main$controls,
 						function () {
 						var _v0 = model.searchOpen;
 						if (_v0) {
@@ -11533,4 +11758,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.SpotifySong":{"args":[],"type":"{ artist : String.String, track : String.String, id : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"GotPlaying":["Result.Result Http.Error Main.SpotifySong"],"DebounceSearch":["Debounce.Msg"],"GotSearch":["Result.Result Http.Error (List.List Main.SpotifySong)"],"SetSearchActive":[],"ChangeSearchInput":["String.String"],"NoOp":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"List.List":{"args":["a"],"tags":{}},"Debounce.Msg":{"args":[],"tags":{"NoOp":[],"Flush":["Maybe.Maybe Basics.Float"],"SendIfLengthNotChangedFrom":["Basics.Int"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.SpotifySong":{"args":[],"type":"{ artist : String.String, track : String.String, id : String.String, album : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"GotPlaying":["Result.Result Http.Error Main.SpotifySong"],"MadeCommand":["Result.Result Http.Error Main.SpotifySong"],"GotSearch":["Result.Result Http.Error (List.List Main.SpotifySong)"],"SendCommand":["String.String"],"DebounceSearch":["Debounce.Msg"],"ChangeSearchInput":["String.String"],"SetSearchActive":[],"NoOp":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"List.List":{"args":["a"],"tags":{}},"Debounce.Msg":{"args":[],"tags":{"NoOp":[],"Flush":["Maybe.Maybe Basics.Float"],"SendIfLengthNotChangedFrom":["Basics.Int"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}}}}})}});}(this));
