@@ -10970,25 +10970,42 @@ var $elm$http$Http$jsonBody = function (value) {
 		A2($elm$json$Json$Encode$encode, 0, value));
 };
 var $author$project$Main$postControlUrl = 'http://localhost:5000/v1/spotify/control';
-var $author$project$Main$postControlChange = function (command) {
-	return $elm$http$Http$request(
-		{
-			body: $elm$http$Http$jsonBody(
-				$elm$json$Json$Encode$object(
+var $author$project$Main$postControlChange = F2(
+	function (command, uuid) {
+		var postBody = function () {
+			if (uuid.$ === 'Nothing') {
+				return $elm$json$Json$Encode$object(
 					_List_fromArray(
 						[
 							_Utils_Tuple2(
 							'command',
 							$elm$json$Json$Encode$string(command))
-						]))),
-			expect: A2($elm$http$Http$expectJson, $author$project$Main$GotPlaying, $author$project$Main$songDecoder),
-			headers: _List_Nil,
-			method: 'POST',
-			timeout: $elm$core$Maybe$Nothing,
-			tracker: $elm$core$Maybe$Nothing,
-			url: $author$project$Main$postControlUrl
-		});
-};
+						]));
+			} else {
+				var val = uuid.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'command',
+							$elm$json$Json$Encode$string(command)),
+							_Utils_Tuple2(
+							'uuid',
+							$elm$json$Json$Encode$string(val))
+						]));
+			}
+		}();
+		return $elm$http$Http$request(
+			{
+				body: $elm$http$Http$jsonBody(postBody),
+				expect: A2($elm$http$Http$expectJson, $author$project$Main$GotPlaying, $author$project$Main$songDecoder),
+				headers: _List_Nil,
+				method: 'POST',
+				timeout: $elm$core$Maybe$Nothing,
+				tracker: $elm$core$Maybe$Nothing,
+				url: $author$project$Main$postControlUrl
+			});
+	});
 var $jinjor$elm_debounce$Debounce$Flush = function (a) {
 	return {$: 'Flush', a: a};
 };
@@ -11147,11 +11164,17 @@ var $jinjor$elm_debounce$Debounce$update = F4(
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
+			case 'SelectTrack':
+				var command = msg.a;
+				var uuid = msg.b;
+				return _Utils_Tuple2(
+					model,
+					A2($author$project$Main$postControlChange, command, uuid));
 			case 'SendCommand':
 				var command = msg.a;
 				return _Utils_Tuple2(
 					model,
-					$author$project$Main$postControlChange(command));
+					A2($author$project$Main$postControlChange, command, $elm$core$Maybe$Nothing));
 			case 'MadeCommand':
 				var result = msg.a;
 				if (result.$ === 'Ok') {
@@ -11562,12 +11585,21 @@ var $1602$elm_feather$FeatherIcons$search = A2(
 					_List_Nil)
 				]))
 		]));
+var $author$project$Main$SelectTrack = F2(
+	function (a, b) {
+		return {$: 'SelectTrack', a: a, b: b};
+	});
 var $author$project$Main$searchItem = function (song) {
 	return A2(
 		$elm$html$Html$li,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('SearchResult')
+				$elm$html$Html$Attributes$class('SearchResult'),
+				$elm$html$Html$Events$onClick(
+				A2(
+					$author$project$Main$SelectTrack,
+					'play',
+					$elm$core$Maybe$Just(song.id)))
 			]),
 		_List_fromArray(
 			[
@@ -11758,4 +11790,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.SpotifySong":{"args":[],"type":"{ artist : String.String, track : String.String, id : String.String, album : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"GotPlaying":["Result.Result Http.Error Main.SpotifySong"],"MadeCommand":["Result.Result Http.Error Main.SpotifySong"],"GotSearch":["Result.Result Http.Error (List.List Main.SpotifySong)"],"SendCommand":["String.String"],"DebounceSearch":["Debounce.Msg"],"ChangeSearchInput":["String.String"],"SetSearchActive":[],"NoOp":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"List.List":{"args":["a"],"tags":{}},"Debounce.Msg":{"args":[],"tags":{"NoOp":[],"Flush":["Maybe.Maybe Basics.Float"],"SendIfLengthNotChangedFrom":["Basics.Int"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.SpotifySong":{"args":[],"type":"{ artist : String.String, track : String.String, id : String.String, album : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"GotPlaying":["Result.Result Http.Error Main.SpotifySong"],"MadeCommand":["Result.Result Http.Error Main.SpotifySong"],"GotSearch":["Result.Result Http.Error (List.List Main.SpotifySong)"],"SendCommand":["String.String"],"SelectTrack":["String.String","Maybe.Maybe String.String"],"DebounceSearch":["Debounce.Msg"],"ChangeSearchInput":["String.String"],"SetSearchActive":[],"NoOp":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"List.List":{"args":["a"],"tags":{}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Debounce.Msg":{"args":[],"tags":{"NoOp":[],"Flush":["Maybe.Maybe Basics.Float"],"SendIfLengthNotChangedFrom":["Basics.Int"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}}}}})}});}(this));

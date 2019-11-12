@@ -158,6 +158,12 @@ h1 {
   color: #555555;
 }
 
+.SearchResult:hover {
+  background: #222222;
+  cursor: pointer;
+  color: var(--spoti-color);
+}
+
 .SearchResult > span {
   display: block;
   white-space: nowrap;

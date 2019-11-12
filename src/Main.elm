@@ -47,6 +47,7 @@ type Msg
     | MadeCommand (Result Http.Error SpotifySong)
     | GotSearch (Result Http.Error (List SpotifySong))
     | SendCommand String
+    | SelectTrack String (Maybe String)
     | DebounceSearch Debounce.Msg
     | ChangeSearchInput String
     | SetSearchActive
@@ -56,8 +57,11 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        SelectTrack command uuid ->
+            ( model, postControlChange command uuid )
+
         SendCommand command ->
-            ( model, postControlChange command )
+            ( model, postControlChange command Nothing )
 
         MadeCommand result ->
             case result of
@@ -173,7 +177,7 @@ view model =
 
 searchItem : SpotifySong -> Html Msg
 searchItem song =
-    li [ class "SearchResult" ]
+    li [ class "SearchResult", onClick (SelectTrack "play" (Just song.id)) ]
         [ span [ class "SearchResult-Label" ] [ text song.track ]
         , span [ class "SearchResult-Label" ] [ text song.artist ]
         ]
@@ -234,11 +238,24 @@ getSearchResults input =
         }
 
 
-postControlChange : String -> Cmd Msg
-postControlChange command =
+postControlChange : String -> Maybe String -> Cmd Msg
+postControlChange command uuid =
+    let
+        postBody =
+            case uuid of
+                Nothing ->
+                    E.object [ ( "command", E.string command ) ]
+
+                Just val ->
+                    E.object
+                        [ ( "command", E.string command )
+                        , ( "uuid", E.string val )
+                        ]
+    in
     Http.request
         { url = postControlUrl
-        , body = Http.jsonBody <| E.object [ ( "command", E.string command ) ]
+        , body =
+            Http.jsonBody <| postBody
         , expect = Http.expectJson GotPlaying songDecoder
         , method = "POST"
         , timeout = Nothing
